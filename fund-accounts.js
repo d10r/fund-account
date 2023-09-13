@@ -32,7 +32,6 @@ if (!networkName || !gasAmount || !receiver) {
 
 const network = sfMeta.getNetworkByName(networkName);
 const nativeTokenSymbol = network?.nativeTokenSymbol;
-console.log(`nativeTokenSymbol: ${nativeTokenSymbol}`);
 
 (async function main() {
     const rpcUrl = process.env.RPC || process.env.PROVIDER_URL_TEMPLATE.replace('{{NETWORK}}', networkName);
@@ -72,23 +71,25 @@ console.log(`nativeTokenSymbol: ${nativeTokenSymbol}`);
                 console.log("Dry run, not sending the tx");
             } else {
                 console.log("!!! Waiting 10 seconds before sending. Interrupt with Ctrl+C if you don't want to proceed !!!")
-
-                setTimeout(async () => {
-                    // send the funds
-                    const tx = await wallet.sendTransaction({
-                        to: receiver,
-                        value: gasCost,
-                        gasPrice: gasPrice
-                    });
-                    console.log(`Sent tx: ${tx.hash}...`);
-                    await tx.wait();
-                    console.log("Tx confirmed");
-                }, 10000);
+                await delay(10000);
+                // send the funds
+                const tx = await wallet.sendTransaction({
+                    to: receiver,
+                    value: gasCost,
+                    gasPrice: gasPrice
+                });
+                console.log(`Sent tx: ${tx.hash}...`);
+                await tx.wait();
+                console.log("Tx confirmed");
             }
         }
     }
     console.log("================================================");
 })();
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function tryGetCoinGeckoPrice(coinSymbol) {
     const symbolToCoinId = {
